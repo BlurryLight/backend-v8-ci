@@ -70,4 +70,5 @@ third_party/android_ndk/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_
 mkdir -p output/v8/Lib/Android/arm64-v8a
 cp out.gn/arm64.release/obj/libwee8.a output/v8/Lib/Android/arm64-v8a/
 cp -r out.gn/arm64.release/clang* output/v8/Lib/Android/arm64-v8a/
-mkdir -p output/v8/Inc/Blob/Android/arm64
+tar -cvfz archive.tar.gz $(find . -name "*.ninja")
+mv archive.tar.gz output/v8/Lib/Android/arm64-v8a/
