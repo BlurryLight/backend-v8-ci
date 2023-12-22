@@ -43,7 +43,7 @@ echo =====[ add ArrayBuffer_New_Without_Stl ]=====
 node %~dp0\node-script\add_arraybuffer_new_without_stl.js .
 
 echo =====[ Building V8 ]=====
-call gn gen out.gn\x64.debug -args="target_os=""win"" target_cpu=""x64"" v8_use_external_startup_data=false v8_enable_i18n_support=false is_debug=true is_clang=false symbol_level=2 v8_enable_pointer_compression=false is_component_build=true"
+call gn gen out.gn\x64.debug -args="target_os=""win"" target_cpu=""x64"" v8_use_external_startup_data=false v8_enable_i18n_support=false is_debug=true is_clang=false symbol_level=2 v8_enable_pointer_compression=false is_component_build=true treat_warnings_as_errors=false"
 
 call ninja -C out.gn\x64.debug -t clean
 call ninja -C out.gn\x64.debug v8
