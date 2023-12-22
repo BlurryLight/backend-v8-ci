@@ -1,0 +1,37 @@
+name: build v8 9.4
+
+on: 
+  workflow_dispatch:
+    inputs:
+      tag_date:
+        description: 'tag date'     
+        required: true
+
+#https://docs.google.com/document/d/1oFPHyNb_eXg6NzrE6xJDNPdJrHMZvx0LqsD6wpbd9vY/edit#heading=h.4tfb7x3beh2l
+#libwee8按设计只支持wasm，不支持js，但8.4.371.19版本尚未移除js功能，还能用，如果升级v8版本要注意
+#libmonolith会稳妥一些，但静态库大小会大些
+env:
+  VERSION: 9.4.146.24
+
+jobs:
+  build_windows_md_dll_dbg:
+    name: Windows-MD-DLL
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run build script
+      shell: cmd
+      run: |
+        cd %GITHUB_WORKSPACE%
+        call npm i
+        call .\windows_64MD_DLL_94_debug.cmd ${{env.VERSION}}
+    - name: Rename
+      shell: bash
+      run: |
+        mv v8/v8/output/v8 v8/v8/output/v8_9.4
+    - uses: actions/upload-artifact@v2
+      with:
+        name: v8_bin_debug
+        path: v8/v8/output/**/*
+
+  
