@@ -25,7 +25,12 @@ jobs:
       run: |
         cd %GITHUB_WORKSPACE%
         call npm i
-        call .\windows_64MD_DLL_94_debug.cmd ${{env.VERSION}}
+        call .\windows_64MD_DLL_10_2_debug.cmd ${{env.VERSION}}
+
+    - name: Setup tmate session
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
+
     - name: Rename
       shell: bash
       run: |

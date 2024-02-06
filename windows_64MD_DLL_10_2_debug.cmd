@@ -33,6 +33,10 @@ call gclient sync
 @REM call git apply --cached --reject %GITHUB_WORKSPACE%\patches\builtins-puerts.patches
 @REM call git checkout -- .
 
+@REM echo =====[ Patching V8 2]=====
+@REM see: https://github.com/nodejs/node/commit/5820d145ad9366677b6bb111727c543811c53c8f
+node %~dp0\node-script\patch_cpp_gc.js ./include/v8-cppgc.h
+
 
 echo =====[ Make dynamic_crt ]=====
 node %~dp0\node-script\rep.js  build\config\win\BUILD.gn
