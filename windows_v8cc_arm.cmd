@@ -1,5 +1,4 @@
 set VERSION=%1
-set NEW_WRAP=%2
 
 cd /d %USERPROFILE%
 echo =====[ Getting Depot Tools ]=====
@@ -48,48 +47,35 @@ if "%VERSION%"=="9.4.146.24" (
     cd ..\..
 )
 
-set "CXX_SETTING=is_clang=false use_custom_libcxx=false"
-
-if "%NEW_WRAP%"=="with_new_wrap" (
-    echo =====[ wrap new delete ]=====
-    set "CXX_SETTING=is_clang=true use_custom_libcxx=true"
-)
-
-if "%VERSION%"=="9.4.146.24" (
-    set "CXX_SETTING=is_clang=false"
-)
-
 @REM echo =====[ Patching V8 ]=====
 @REM node %GITHUB_WORKSPACE%\CRLF2LF.js %GITHUB_WORKSPACE%\patches\builtins-puerts.patches
 @REM call git apply --cached --reject %GITHUB_WORKSPACE%\patches\builtins-puerts.patches
 @REM call git checkout -- .
 
-echo =====[ Make dynamic_crt ]=====
-node %~dp0\node-script\rep.js  build\config\win\BUILD.gn
+@REM issue #4
+node %~dp0\node-script\do-gitpatch.js -p %GITHUB_WORKSPACE%\patches\intrin.patch
 
 echo =====[ add ArrayBuffer_New_Without_Stl ]=====
 node %~dp0\node-script\add_arraybuffer_new_without_stl.js . %VERSION% %NEW_WRAP%
 
-node %~dp0\node-script\patchs.js . %VERSION% %NEW_WRAP%
+node %~dp0\node-script\do-gitpatch.js -p %GITHUB_WORKSPACE%\patches\v8cc_arm_win_v%VERSION%.patch
+
+node %~dp0\node-script\add_cross_v8cc.js . %VERSION% arm
 
 echo =====[ Building V8 ]=====
 if "%VERSION%"=="11.8.172" (
-    call gn gen out.gn\x64.release -args="target_os=""win"" target_cpu=""x64"" v8_use_external_startup_data=false v8_enable_i18n_support=false is_debug=false v8_static_library=true %CXX_SETTING% strip_debug_info=true symbol_level=0 v8_enable_pointer_compression=false v8_enable_sandbox=false v8_enable_maglev=false v8_enable_webassembly=false"
+    call gn gen out.gn\x86.release -args="target_os=""win"" target_cpu=""x86"" v8_use_external_startup_data=false v8_enable_i18n_support=false is_debug=false v8_static_library=true is_clang=false strip_debug_info=true symbol_level=0 v8_enable_pointer_compression=false v8_enable_sandbox=false v8_enable_maglev=false v8_enable_webassembly=false"
 )
 
 if "%VERSION%"=="10.6.194" (
-    call gn gen out.gn\x64.release -args="target_os=""win"" target_cpu=""x64"" v8_use_external_startup_data=false v8_enable_i18n_support=false is_debug=false v8_static_library=true %CXX_SETTING% strip_debug_info=true symbol_level=0 v8_enable_pointer_compression=false v8_enable_sandbox=false"
+    call gn gen out.gn\x86.release -args="target_os=""win"" target_cpu=""x86"" v8_use_external_startup_data=false v8_enable_i18n_support=false is_debug=false v8_static_library=true is_clang=false strip_debug_info=true symbol_level=0 v8_enable_pointer_compression=false v8_enable_sandbox=false"
 )
 
 if "%VERSION%"=="9.4.146.24" (
-    call gn gen out.gn\x64.release -args="target_os=""win"" target_cpu=""x64"" v8_use_external_startup_data=false v8_enable_i18n_support=false is_debug=false v8_static_library=true %CXX_SETTING% strip_debug_info=true symbol_level=0 v8_enable_pointer_compression=false"
+    call gn gen out.gn\x86.release -args="target_os=""win"" target_cpu=""x86"" v8_use_external_startup_data=false v8_enable_i18n_support=false is_debug=false v8_static_library=true is_clang=false strip_debug_info=true symbol_level=0 v8_enable_pointer_compression=false"
 )
-call ninja -C out.gn\x64.release -t clean
-call ninja -v -C out.gn\x64.release wee8
 
-md output\v8\Lib\Win64MD
-if "%NEW_WRAP%"=="with_new_wrap" (
-  call %~dp0\rename_symbols_win.cmd x64 output\v8\Lib\Win64MD\
-)
-copy /Y out.gn\x64.release\obj\wee8.lib output\v8\Lib\Win64MD\
-md output\v8\Inc\Blob\Win64MD
+call ninja -v -C out.gn\x86.release v8cc
+
+md output\v8\Bin\Win\arm
+copy /Y out.gn\x86.release\v8cc.exe output\v8\Bin\Win\arm\
